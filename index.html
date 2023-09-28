@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Editor with Toolbar</title>
+    <!-- Include Ace code editor library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        /* Add some basic styling */
+        #editor {
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Style the toolbar */
+        #toolbar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f0f0f0;
+            padding: 5px;
+        }
+
+        #toolbar button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <!-- Add buttons for common actions -->
+        <button id="undoButton">Undo</button>
+        <button id="redoButton">Redo</button>
+        <button id="cutButton">Cut</button>
+        <button id="copyButton">Copy</button>
+        <button id="pasteButton">Paste</button>
+        <button id="findButton">Find</button>
+        <button id="replaceButton">Replace</button>
+        <button id="saveButton">Save</button>
+    </div>
+    <input type="file" id="fileInput" accept=".txt, .svg, .png, .jpg" />
+    <div id="fileContent"></div>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileContent = document.getElementById('fileContent');
+        let editor = null;
+
+        // Initialize the Ace editor
+        function initializeEditor(content) {
+            if (editor) {
+                editor.destroy();
+            }
+
+            editor = ace.edit("editor");
+            editor.setValue(content);
+            editor.getSession().setMode("ace/mode/text");
+            editor.setReadOnly(false);
+            editor.focus();
+        }
+
+        // Handle toolbar actions
+        const undoButton = document.getElementById('undoButton');
+        undoButton.addEventListener('click', function() {
+            if (editor) {
+                editor.undo();
+            }
+        });
+
+        const redoButton = document.getElementById('redoButton');
+        redoButton.addEventListener('click', function() {
+            if (editor) {
+                editor.redo();
+            }
+        });
+
+        const cutButton = document.getElementById('cutButton');
+        cutButton.addEventListener('click', function() {
+            if (editor) {
+                document.execCommand("cut");
+            }
+        });
+
+        const copyButton = document.getElementById('copyButton');
+        copyButton.addEventListener('click', function() {
+            if (editor) {
+                document.execCommand("copy");
+            }
+        });
+
+        const pasteButton = document.getElementById('pasteButton');
+        pasteButton.addEventListener('click', function() {
+            if (editor) {
+                document.execCommand("paste");
+            }
+        });
+
+        const findButton = document.getElementById('findButton');
+        findButton.addEventListener('click', function() {
+            if (editor) {
+                const searchText = prompt("Find:");
+                editor.find(searchText);
+            }
+        });
+
+        const replaceButton = document.getElementById('replaceButton');
+        replaceButton.addEventListener('click', function() {
+            if (editor) {
+                const searchText = prompt("Find:");
+                const replaceText = prompt("Replace with:");
+                editor.find(searchText);
+                editor.replace(replaceText);
+            }
+        });
+
+        // Handle file input change
+        fileInput.addEventListener('change', function() {
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    const content = event.target.result;
+
+                    // Display text content using Ace code editor
+                    fileContent.innerHTML = '<div id="editor"></div>';
+                    initializeEditor(content);
+                };
+
+                reader.readAsText(file);
+            }
+        });
+
+        // Save changes for text files
+        const saveButton = document.getElementById('saveButton');
+        saveButton.addEventListener('click', function() {
+            if (editor && fileInput.files[0]) {
+                const updatedContent = editor.getValue();
+                const blob = new Blob([updatedContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileInput.files[0].name;
+                a.click();
+
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+</html>
